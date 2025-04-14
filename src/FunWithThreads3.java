@@ -1,3 +1,10 @@
+/*
+@ASSESSME.USERID: fb1060
+@ASSESSME.AUTHOR: 
+@ASSESSME.DESCRIPTION: 
+@ASSESSME.ANALYZE: YES
+*/
+
 public class FunWithThreads3 {
 
 

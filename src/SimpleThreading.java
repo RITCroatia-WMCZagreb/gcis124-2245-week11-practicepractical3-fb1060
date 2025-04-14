@@ -1,4 +1,11 @@
 /*
+@ASSESSME.USERID: fb1060
+@ASSESSME.AUTHOR: 
+@ASSESSME.DESCRIPTION: 
+@ASSESSME.ANALYZE: YES
+*/
+
+/*
 This problem tests your knowledge of Threads. Write a program named 
 SimpleThreading.java to create several threads and a simple counter. The main 
 program will instantiate an object of class Threads, calling its constructor. 
@@ -51,74 +58,76 @@ to code this any way you want as long as the threads run concurrently.
 */
 
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SimpleThreading {
-
-    private int counter = 90;
-    private Object lock = new Object();
-
+    private int counter;
+    private final Lock lock = new ReentrantLock();
+    private final ArrayList<Thread> threads = new ArrayList<>();
+   
     public SimpleThreading(){
-        ArrayList<Thread> threads = new ArrayList<Thread>();
+      counter = 90;
 
-        for(int i=1;i<=5;i++){
-            Thread t = new Thread(new InnerThread(i));
-            t.start();//run the threads
-            threads.add(t);
-            /*try {
-                t.join();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }//nono, do not call this here*/
+      for (int i = 1; i <= 5; i++){
+        CounterThread thread = new CounterThread(i);
+        threads.add(thread);
+        thread.start();
+      }
+
+      for (Thread thread : threads){
+        try{
+            thread.join();
+        } catch (InterruptedException e){
+            e.printStackTrace();
         }
+      }
 
-        for(Thread t: threads){
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-
-        System.out.println("Main: at end counter = " + counter);
+      System.out.println("Main: at end counter = " + counter);
     }
 
     public static void main(String[] args) {
         new SimpleThreading();
     }
 
+    private class CounterThread extends Thread{
+        private final int threadNum;
 
-    class InnerThread implements Runnable{
-
-        private int name;
-        public InnerThread(int name){
-            this.name = name;
+        public CounterThread(int threadNum){
+            this.threadNum = threadNum;
         }
 
         @Override
-        public void run() {
-            for(int i=0;i<10;i++){
+        public void run(){
+            while(true){
+                boolean shouldExit = false;
 
-              
-
-                synchronized(lock){
-                    if(counter<=0) break;
-                    counter = counter -3;
-                    System.out.println("Thread " + name + " counter " + counter);
+                lock.lock();
+                try{
+                    if(counter > 0){
+                        counter -= 3;
+                        System.out.println("Thread " + threadNum + " counter " + counter);
+                        if(counter <= 0){
+                            shouldExit = true;
+                        }
+                    } else {
+                        shouldExit = true;
+                    }
+                } finally {
+                    lock.unlock();
                 }
-                
 
-                try {
-                    Thread.sleep(2);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                if (shouldExit){
+                    break;
                 }
             }
+            try {
+                thread.sleep(2);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
-        
     }
+    
     
 }
